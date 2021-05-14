@@ -6,8 +6,12 @@
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseExpression>Unlicense</PackageLicenseExpression>
     <Authors>wertzui</Authors>
+    <PackageProjectUrl>https://github.com/wertzui/RuntimeCompiler</PackageProjectUrl>
     <RepositoryUrl>https://github.com/wertzui/RuntimeCompiler</RepositoryUrl>
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
