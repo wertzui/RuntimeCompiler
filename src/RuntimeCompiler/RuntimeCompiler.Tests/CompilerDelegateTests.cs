@@ -19,7 +19,6 @@ namespace RuntimeCompiler.Tests
             Assert.AreEqual(expectedResult, actualResult);
         }
 
-
         delegate string MyDelegate(string value);
     }
 }
