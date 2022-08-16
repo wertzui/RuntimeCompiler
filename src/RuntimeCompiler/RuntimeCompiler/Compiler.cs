@@ -323,8 +323,8 @@ namespace RuntimeCompiler
             var parametersAndResult = GetParametersAndResultTypes(delegateType);
             var isAction = parametersAndResult.result == typeof(void);
 
-            var argumentTypes = GetFullTypeNames(parametersAndResult.parameters);
-            var arguments = GetArguements(argumentNames, argumentTypes);
+            var parameterTypeDeclarations = GetParameterTypeDeclarations(parametersAndResult.parameters);
+            var parameters = GetParameters(argumentNames, parameterTypeDeclarations);
 
             var returnType = isAction ? "void" : GetFullTypeName(parametersAndResult.result);
 
@@ -333,13 +333,13 @@ namespace RuntimeCompiler
                 .Distinct();
 
             var usingsForTypeArguments = string.Join(Environment.NewLine,
-                argumentTypes
+                parameterTypeDeclarations.Select(d => d.fullyTypeName)
                     .Select(t => t.Contains('.') ? t[..t.LastIndexOf('.')] : t)
                     .Select(n => $"using {n};"));
 
             var method = CompileMethod(
                 methodBody,
-                arguments,
+                parameters,
                 returnType,
                 additionalUsings + Environment.NewLine + usingsForTypeArguments,
                 methodName,
@@ -681,20 +681,36 @@ namespace RuntimeCompiler
             return references;
         }
 
-        private static string GetArguements(IEnumerable<string> names, IEnumerable<string> types)
-            => string.Join(", ", types.Zip(names).Select(zipped => zipped.First + " " + zipped.Second));
+        private static string GetParameters(IEnumerable<string> names, IEnumerable<(string? modifier, string fullyTypeName)> parameterTypeDeclarations)
+            => string.Join(", ", parameterTypeDeclarations.Zip(names).Select(zipped => zipped.First.modifier + " " + zipped.First.fullyTypeName + " " + zipped.Second));
 
         private static string GetFullTypeName<T>() => GetFullTypeName(typeof(T));
 
         private static string GetFullTypeName(Type type) => type.FullName?.Replace('+', '.') ?? throw new ArgumentException($"The FullName of {type} must not be null.", nameof(type));
 
-        private static IEnumerable<string> GetFullTypeNames(IEnumerable<Type> types)
-            => types.Select(GetFullTypeName);
+        private static IEnumerable<(string? modifier, string fullyTypeName)> GetParameterTypeDeclarations(IEnumerable<ParameterInfo> parameters)
+            => parameters.Select(GetParameterTypeDeclaration);
 
-        private static (IEnumerable<Type> parameters, Type result) GetParametersAndResultTypes(Type delegateType)
+        private static (string? modifier, string fullyTypeName) GetParameterTypeDeclaration(ParameterInfo parameter)
         {
-            var invokeMethod = delegateType.GetMethod("Invoke") ?? throw new InvalidOperationException($"Unable to retrieve Invoke method of the type '{delegateType}'. Make sure the type is a delegate.");            
-            return (invokeMethod.GetParameters().Select(x => x.ParameterType), invokeMethod.ReturnType);
+            if (!parameter.ParameterType.IsByRef)
+                return (null, GetFullTypeName(parameter.ParameterType));
+
+            return (GetModifier(parameter), GetFullTypeName(parameter.ParameterType.GetElementType()!));
+
+            static string GetModifier(ParameterInfo parameter)
+             => parameter switch
+             {
+                 { IsOut: true } => "out",
+                 { IsIn: true } => "in",
+                 _ => "ref"
+             };
+        }
+
+        private static (ParameterInfo[] parameters, Type result) GetParametersAndResultTypes(Type delegateType)
+        {
+            var invokeMethod = delegateType.GetMethod("Invoke") ?? throw new InvalidOperationException($"Unable to retrieve Invoke method of the type '{delegateType}'. Make sure the type is a delegate.");
+            return (invokeMethod.GetParameters(), invokeMethod.ReturnType);
         }
     }
 }
