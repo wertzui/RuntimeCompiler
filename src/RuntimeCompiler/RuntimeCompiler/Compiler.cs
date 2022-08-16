@@ -688,17 +688,13 @@ namespace RuntimeCompiler
 
         private static string GetFullTypeName(Type type) => type.FullName?.Replace('+', '.') ?? throw new ArgumentException($"The FullName of {type} must not be null.", nameof(type));
 
-        private static IEnumerable<string> GetFullTypeNames(params Type[] types)
+        private static IEnumerable<string> GetFullTypeNames(IEnumerable<Type> types)
             => types.Select(GetFullTypeName);
 
-        private static (Type[] parameters, Type result) GetParametersAndResultTypes(Type delegateType)
+        private static (IEnumerable<Type> parameters, Type result) GetParametersAndResultTypes(Type delegateType)
         {
-            var isAction = delegateType.FullName?.StartsWith("System.Action") ?? throw new ArgumentException($"The FullName of {delegateType} must not be null.", nameof(delegateType));
-
-            if (isAction)
-                return (delegateType.GenericTypeArguments, typeof(void));
-
-            return (delegateType.GenericTypeArguments[..^1], delegateType.GenericTypeArguments[^1]);
+            var invokeMethod = delegateType.GetMethod("Invoke") ?? throw new InvalidOperationException($"Unable to retrieve Invoke method of the type '{delegateType}'. Make sure the type is a delegate.");            
+            return (invokeMethod.GetParameters().Select(x => x.ParameterType), invokeMethod.ReturnType);
         }
     }
 }
