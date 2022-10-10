@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Collections.Generic;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace RuntimeCompiler.Tests
 {
@@ -56,6 +57,16 @@ Console.WriteLine(x.Foo);
 
             // Assert
             action();
+        }
+
+        [TestMethod]
+        public void Action_with_generic_parameter_can_be_executed()
+        {
+            // Act
+            var action = Compiler.CompileAction<List<string>>(";", "list");
+
+            // Assert
+            action(new List<string>());
         }
     }
 
