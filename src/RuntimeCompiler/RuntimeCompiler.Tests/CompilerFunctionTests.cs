@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Collections.Generic;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace RuntimeCompiler.Tests
 {
@@ -45,6 +46,17 @@ namespace RuntimeCompiler.Tests
 
             // Assert
             Assert.AreEqual(expectedResult, actualResult);
+        }
+
+        [TestMethod]
+        public void Function_with_generic_return_type_can_be_executed()
+        {
+            // Act
+            var func = Compiler.CompileFunction<List<string>>("new List<string>()");
+            var actualResult = func();
+
+            // Assert
+            Assert.IsNotNull(actualResult);
         }
 
         [DataTestMethod]

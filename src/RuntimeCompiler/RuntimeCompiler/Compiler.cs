@@ -332,16 +332,19 @@ namespace RuntimeCompiler
                 .Select(a => a.Assembly)
                 .Distinct();
 
-            var usingsForTypeArguments = string.Join(Environment.NewLine,
-                parameterTypeDeclarations.Select(d => d.fullyTypeName)
-                    .Select(t => t.Contains('.') ? t[..t.LastIndexOf('.')] : t)
-                    .Select(n => $"using {n};"));
+
+            var allSignitureTypes = parameterTypeDeclarations.Select(x => x.type);
+            if (!isAction)
+                allSignitureTypes = allSignitureTypes.Append(parametersAndResult.result);
+
+            var usingsForSignatureTypes = string.Join(Environment.NewLine,
+                allSignitureTypes.Select(d => $"using {d.Namespace};"));
 
             var method = CompileMethod(
                 methodBody,
                 parameters,
                 returnType,
-                additionalUsings + Environment.NewLine + usingsForTypeArguments,
+                additionalUsings + Environment.NewLine + usingsForSignatureTypes,
                 methodName,
                 className,
                 namespaceName,
@@ -681,22 +684,31 @@ namespace RuntimeCompiler
             return references;
         }
 
-        private static string GetParameters(IEnumerable<string> names, IEnumerable<(string? modifier, string fullyTypeName)> parameterTypeDeclarations)
+        private static string GetParameters(IEnumerable<string> names, IEnumerable<(string? modifier, string fullyTypeName, Type type)> parameterTypeDeclarations)
             => string.Join(", ", parameterTypeDeclarations.Zip(names).Select(zipped => zipped.First.modifier + " " + zipped.First.fullyTypeName + " " + zipped.Second));
 
         private static string GetFullTypeName<T>() => GetFullTypeName(typeof(T));
 
-        private static string GetFullTypeName(Type type) => type.FullName?.Replace('+', '.') ?? throw new ArgumentException($"The FullName of {type} must not be null.", nameof(type));
+        private static string GetFullTypeName(Type type)
+        {
+            var fullName = type.FullName?.Replace('+', '.') ?? throw new ArgumentException($"The FullName of {type} must not be null.", nameof(type));
 
-        private static IEnumerable<(string? modifier, string fullyTypeName)> GetParameterTypeDeclarations(IEnumerable<ParameterInfo> parameters)
+            if (!type.IsGenericType)
+                return fullName;
+
+            string genericArguments = string.Join(", ", type.GetGenericArguments().Select(GetFullTypeName));
+            return $"{fullName.Substring(0, fullName.IndexOf("`"))}<{genericArguments}>";
+        }
+
+        private static IEnumerable<(string? modifier, string fullyTypeName, Type type)> GetParameterTypeDeclarations(IEnumerable<ParameterInfo> parameters)
             => parameters.Select(GetParameterTypeDeclaration);
 
-        private static (string? modifier, string fullyTypeName) GetParameterTypeDeclaration(ParameterInfo parameter)
+        private static (string? modifier, string fullyTypeName, Type type) GetParameterTypeDeclaration(ParameterInfo parameter)
         {
             if (!parameter.ParameterType.IsByRef)
-                return (null, GetFullTypeName(parameter.ParameterType));
+                return (null, GetFullTypeName(parameter.ParameterType), parameter.ParameterType);
 
-            return (GetModifier(parameter), GetFullTypeName(parameter.ParameterType.GetElementType()!));
+            return (GetModifier(parameter), GetFullTypeName(parameter.ParameterType.GetElementType()!), parameter.ParameterType);
 
             static string GetModifier(ParameterInfo parameter)
              => parameter switch
