@@ -2,23 +2,22 @@
 using System;
 using System.Reflection;
 
-namespace RuntimeCompiler.Tests
+namespace RuntimeCompiler.Tests;
+
+[TestClass]
+public class ReflectionHelperTests
 {
-    [TestClass]
-    public class ReflectionHelperTests
+    [TestMethod]
+    public void ReflectionHelper_Finds_Object_Equals()
     {
-        [TestMethod]
-        public void ReflectionHelper_Finds_Object_Equals()
-        {
-            // Arrange
-            var assembly = typeof(object).Assembly;
-            var expectedMethod = typeof(object).GetMethod(nameof(object.Equals), BindingFlags.Public | BindingFlags.Static);
+        // Arrange
+        var assembly = typeof(object).Assembly;
+        var expectedMethod = typeof(object).GetMethod(nameof(object.Equals), BindingFlags.Public | BindingFlags.Static);
 
-            // Act
-            var actualMethod = ReflectionHelper.GetMethodFromAssembly(assembly, nameof(object.Equals), nameof(Object), nameof(System));
+        // Act
+        var actualMethod = ReflectionHelper.GetMethodFromAssembly(assembly, nameof(object.Equals), nameof(Object), nameof(System));
 
-            // Assert
-            Assert.AreEqual(expectedMethod, actualMethod);
-        }
+        // Assert
+        Assert.AreEqual(expectedMethod, actualMethod);
     }
 }

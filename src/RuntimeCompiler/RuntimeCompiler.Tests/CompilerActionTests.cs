@@ -1,77 +1,76 @@
 ﻿using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace RuntimeCompiler.Tests
+namespace RuntimeCompiler.Tests;
+
+[TestClass]
+public class CompilerActionTests
 {
-    [TestClass]
-    public class CompilerActionTests
+    [TestMethod]
+    public void Empty_action_with_0_parameters_can_be_executed()
     {
-        [TestMethod]
-        public void Empty_action_with_0_parameters_can_be_executed()
-        {
-            // Arrange
+        // Arrange
 
-            // Act
-            var action = Compiler.CompileAction(";");
+        // Act
+        var action = Compiler.CompileAction(";");
 
-            // Assert
-            action();
-        }
+        // Assert
+        action();
+    }
 
-        [TestMethod]
-        public void Empty_action_with_1_parameters_can_be_executed()
-        {
-            // Arrange
+    [TestMethod]
+    public void Empty_action_with_1_parameters_can_be_executed()
+    {
+        // Arrange
 
-            // Act
-            var action = Compiler.CompileAction<int>(";");
+        // Act
+        var action = Compiler.CompileAction<int>(";");
 
-            // Assert
-            action(1);
-        }
+        // Assert
+        action(1);
+    }
 
-        [TestMethod]
-        public void Empty_action_with_2_parameters_can_be_executed()
-        {
-            // Arrange
+    [TestMethod]
+    public void Empty_action_with_2_parameters_can_be_executed()
+    {
+        // Arrange
 
-            // Act
-            var action = Compiler.CompileAction<int, string>(";", new[] { "argument1", "argument2" });
+        // Act
+        var action = Compiler.CompileAction<int, string>(";", new[] { "argument1", "argument2" });
 
-            // Assert
-            action(1, "foo");
-        }
+        // Assert
+        action(1, "foo");
+    }
 
-        [TestMethod]
-        public void Action_with_custom_type_can_be_executed()
-        {
-            // Arrange
-            var methodBody = @"
+    [TestMethod]
+    public void Action_with_custom_type_can_be_executed()
+    {
+        // Arrange
+        var methodBody = @"
 MyClass x = new MyClass();
 x.Foo = 3;
 Console.WriteLine(x.Foo);
 ";
 
-            // Act
-            var action = Compiler.CompileAction(methodBody, "using RuntimeCompiler.Tests;");
+        // Act
+        var action = Compiler.CompileAction(methodBody, "using RuntimeCompiler.Tests;");
 
-            // Assert
-            action();
-        }
-
-        [TestMethod]
-        public void Action_with_generic_parameter_can_be_executed()
-        {
-            // Act
-            var action = Compiler.CompileAction<List<string>>(";", "list");
-
-            // Assert
-            action(new List<string>());
-        }
+        // Assert
+        action();
     }
 
-    public class MyClass
+    [TestMethod]
+    public void Action_with_generic_parameter_can_be_executed()
     {
-        public int Foo { get; set; }
+        // Act
+        var action = Compiler.CompileAction<List<string>>(";", "list");
+
+        // Assert
+        action(new List<string>());
     }
+}
+
+public class MyClass
+{
+    public int Foo { get; set; }
 }

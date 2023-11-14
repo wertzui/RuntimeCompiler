@@ -1,20 +1,20 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace RuntimeCompiler.Tests
+namespace RuntimeCompiler.Tests;
+
+[TestClass]
+public class SourceGeneratorTests
 {
-    [TestClass]
-    public class SourceGeneratorTests
+    [DataTestMethod]
+    [DataRow("methodBodyWithoutSemicolon")]
+    [DataRow(";methodBodyWithSemicolonAtTheBeginning")]
+    [DataRow("methodBodyWithSemicolon;InTheMiddle")]
+    public void Arguments_are_correctly_inserted_into_the_source_code_without_semicolon(string methodBody)
     {
-        [DataTestMethod]
-        [DataRow("methodBodyWithoutSemicolon")]
-        [DataRow(";methodBodyWithSemicolonAtTheBeginning")]
-        [DataRow("methodBodyWithSemicolon;InTheMiddle")]
-        public void Arguments_are_correctly_inserted_into_the_source_code_without_semicolon(string methodBody)
-        {
-            // Arrange
-            var arguments = "argumentType argumentName";
-            var returnType = "somethingNotVoid";
-            var expectedSource = @$"
+        // Arrange
+        var arguments = "argumentType argumentName";
+        var returnType = "somethingNotVoid";
+        var expectedSource = @$"
 using System;
 
 
@@ -29,18 +29,18 @@ namespace DynamicCompilation
     }}
 }}";
 
-            // Act
-            var actualSource = SourceGenerator.GenerateSource(methodBody, arguments, returnType);
+        // Act
+        var actualSource = SourceGenerator.GenerateSource(methodBody, arguments, returnType);
 
-            // Assert
-            Assert.AreEqual(expectedSource, actualSource);
-        }
+        // Assert
+        Assert.AreEqual(expectedSource, actualSource);
+    }
 
-        [TestMethod]
-        public void Arguments_are_correctly_inserted_into_the_source_code_with_semicolon()
-        {
-            // Arrange
-            const string expectedSource = @"
+    [TestMethod]
+    public void Arguments_are_correctly_inserted_into_the_source_code_with_semicolon()
+    {
+        // Arrange
+        const string expectedSource = @"
 using System;
 
 
@@ -56,11 +56,10 @@ namespace DynamicCompilation
 }";
 
 
-            // Act
-            var actualSource = SourceGenerator.GenerateSource("methodBodyWithSemicolon;", "argumentType argumentName");
+        // Act
+        var actualSource = SourceGenerator.GenerateSource("methodBodyWithSemicolon;", "argumentType argumentName");
 
-            // Assert
-            Assert.AreEqual(expectedSource, actualSource);
-        }
+        // Assert
+        Assert.AreEqual(expectedSource, actualSource);
     }
 }
