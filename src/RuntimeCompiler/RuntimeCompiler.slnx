@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="RuntimeCompiler.Tests/RuntimeCompiler.Tests.csproj" />
+  <Project Path="RuntimeCompiler/RuntimeCompiler.csproj" />
+</Solution>
