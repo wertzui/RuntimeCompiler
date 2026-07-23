@@ -3,7 +3,7 @@
 [![NuGetDownloads](https://img.shields.io/nuget/dt/RuntimeCompiler.svg)](https://www.nuget.org/packages/RuntimeCompiler/)
 
 
-`RuntimeCompiler` affers easy to use Methods which will compile C# code to an `Action` or `Func` at runtime.
+`RuntimeCompiler` offers easy to use Methods which will compile C# code to an `Action` or `Func` at runtime.
 It uses the Roslyn Compiler platform to acchieve the outcome, so the result is just the same as if you had written code and compiled it down to a normal `Assembly`.
 
 ## Usage
